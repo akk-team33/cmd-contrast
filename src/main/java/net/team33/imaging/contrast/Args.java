@@ -1,5 +1,7 @@
 package net.team33.imaging.contrast;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -36,6 +38,14 @@ public class Args {
         }
     }
 
+    private static Path outputPath(final Path sourcePath, String name) throws IOException {
+        final String toString = sourcePath.toString();
+        final int dotPos = toString.lastIndexOf('.');
+        final Path dir = Paths.get(toString.substring(0, dotPos));
+        Files.createDirectories(dir);
+        return dir.resolve(name);
+    }
+
     public Path getSourcePath() {
         return sourcePath;
     }
@@ -51,6 +61,18 @@ public class Args {
     @Override
     public final String toString() {
         return format("Args(sourcePath(%s), radius(%d), factor(%s)}", sourcePath, radius, factor);
+    }
+
+    public Path getMinimumPath() throws IOException {
+        return outputPath(sourcePath, "minimum.png");
+    }
+
+    public Path getMediumPath() throws IOException {
+        return outputPath(sourcePath, "medium.png");
+    }
+
+    public Path getMaximumPath() throws IOException {
+        return outputPath(sourcePath, "maximum.png");
     }
 
     public static class Problem extends Exception {

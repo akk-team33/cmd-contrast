@@ -1,10 +1,10 @@
 package net.team33.imaging.contrast;
 
+import net.team33.imaging.test.Util;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,29 +14,16 @@ import static net.team33.imaging.contrast.Main.main;
 public class MainTrial {
 
     private static final Path RESOURCE_PATH
-            = Paths.get("src", "test", "resources", "MainTrial.jpg").toAbsolutePath().normalize();
+            = Paths.get("src", "test", "resources", "MainTrial.png").toAbsolutePath().normalize();
     private static final Path TEST_PATH
             = Paths.get("target", "test.io", MainTrial.class.getName());
-    private static final String TEST_MAIN99_IMG = "testMain99.jpg";
+    private static final String TEST_MAIN99_IMG = "testMain99.png";
 
     @BeforeClass
     public static void doBeforeClass() throws IOException {
-        Path path = TEST_PATH.toAbsolutePath().normalize();
-        delete(path);
+        final Path path = TEST_PATH.toAbsolutePath().normalize();
+        Util.delete(path);
         Files.createDirectories(path);
-    }
-
-    private static void delete(final Path path) {
-        try {
-            if (Files.isDirectory(path)) {
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-                    stream.forEach((entry) -> delete(entry));
-                }
-            }
-            Files.delete(path);
-        } catch (IOException e) {
-            throw new Error(e);
-        }
     }
 
     @Test
@@ -66,8 +53,8 @@ public class MainTrial {
 
     @Test
     public void testMain99() throws Exception {
-        Path path = TEST_PATH.resolve(TEST_MAIN99_IMG);
+        final Path path = TEST_PATH.resolve(TEST_MAIN99_IMG);
         Files.copy(RESOURCE_PATH, path);
-        main(new String[]{path.toString(), "256", "100"});
+        main(new String[]{path.toString(), "16", "100"});
     }
 }
