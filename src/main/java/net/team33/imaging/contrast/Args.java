@@ -16,6 +16,7 @@ public class Args {
     private final Path sourcePath;
     private final int radius;
     private final double factor;
+    private Path destinationPath;
 
     private Args(final Path sourcePath, final int radius, final double factor)
             throws NullPointerException, IllegalArgumentException {
@@ -73,6 +74,10 @@ public class Args {
 
     public Path getMaximumPath() throws IOException {
         return outputPath(sourcePath, "maximum.png");
+    }
+
+    public Path getDestinationPath() throws IOException {
+        return outputPath(sourcePath, "destination.png");
     }
 
     public static class Problem extends Exception {

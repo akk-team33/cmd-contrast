@@ -14,7 +14,7 @@ import static net.team33.imaging.contrast.Main.main;
 public class MainTrial {
 
     private static final Path RESOURCE_PATH
-            = Paths.get("src", "test", "resources", "MainTrial.png").toAbsolutePath().normalize();
+            = Paths.get("src", "test", "resources", "MainTrial2.png").toAbsolutePath().normalize();
     private static final Path TEST_PATH
             = Paths.get("target", "test.io", MainTrial.class.getName());
     private static final String TEST_MAIN99_IMG = "testMain99.png";
@@ -55,6 +55,6 @@ public class MainTrial {
     public void testMain99() throws Exception {
         final Path path = TEST_PATH.resolve(TEST_MAIN99_IMG);
         Files.copy(RESOURCE_PATH, path);
-        main(new String[]{path.toString(), "16", "100"});
+        main(new String[]{path.toString(), "32", "100"});
     }
 }

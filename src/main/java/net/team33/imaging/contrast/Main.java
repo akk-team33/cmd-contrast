@@ -15,28 +15,33 @@ public final class Main {
     public static void main(final String[] args){
         try {
             proceed(Args.build(args));
-        } catch (Args.Problem caught) {
+        } catch (final Args.Problem caught) {
             caught.printStackTrace();
-        } catch (IOException caught) {
+        } catch (final IOException caught) {
             caught.printStackTrace();
         }
     }
 
     private static void proceed(final Args args) throws IOException {
         System.out.println(args);
-        BufferedImage image = ImageIO.read(args.getSourcePath().toFile());
-        Result result = proceed(args, image, image.getWidth(), image.getHeight());
+        final BufferedImage image = ImageIO.read(args.getSourcePath().toFile());
+        final Result result = proceed(args, image, image.getWidth(), image.getHeight());
+        System.out.println('$');
         ImageIO.write(result.getMinimum(), "png", args.getMinimumPath().toFile());
         ImageIO.write(result.getMedium(), "png", args.getMediumPath().toFile());
         ImageIO.write(result.getMaximum(), "png", args.getMaximumPath().toFile());
+        ImageIO.write(result.getDestination(), "png", args.getDestinationPath().toFile());
     }
 
     private static Result proceed(final Args args, final BufferedImage image, final int width, final int height) {
         System.out.println("width:  " + width);
         System.out.println("height: " + height);
         final Result result = new Result(image, width, height);
+        final int distance = Math.max(1, height / 120);
         for (int y = 0; y < height; ++y) {
-            System.out.println(y);
+            if (y % distance == 0) {
+                System.out.print('.');
+            }
             proceed(args, image, y, width, height, result);
         }
         return result;
@@ -61,5 +66,6 @@ public final class Main {
         result.getMinimum().setRGB(x, y, pixelInfo.getMinimum());
         result.getMaximum().setRGB(x, y, pixelInfo.getMaximum());
         result.getMedium().setRGB(x, y, pixelInfo.getMedium());
+        result.getDestination().setRGB(x, y, pixelInfo.getDestination());
     }
 }
