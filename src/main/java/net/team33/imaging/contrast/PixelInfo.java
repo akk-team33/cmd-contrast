@@ -1,10 +1,10 @@
 package net.team33.imaging.contrast;
 
+import net.team33.imaging.contrast.doubles.Circle;
+import net.team33.imaging.contrast.doubles.Point;
+
 import java.awt.image.BufferedImage;
 import java.util.Random;
-
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 public class PixelInfo {
 
@@ -72,8 +72,6 @@ public class PixelInfo {
         private final int minimum;
         private final int medium;
         private final int maximum;
-        private final int minimal;
-        private final int maximal;
         private final int destination;
 
         private Component(final int original, final int[] histogram) {
@@ -82,13 +80,12 @@ public class PixelInfo {
             this.minimum = minimum(histogram, medium, steps);
             this.maximum = maximum(histogram, medium, steps);
 
-            this.minimal = minimal(127, steps);
-            this.maximal = maximal(128, steps);
 
-            final double m = delta(maximal, minimal) / delta(maximum, minimum);
-            final double b = delta(127.5, (m * medium));
+            final Point center = new Point((original < medium) ? 0 : VALUE_LIMIT, medium);
+            final double radius = (original < medium) ? medium : (VALUE_LIMIT - medium);
+            final Circle circle = new Circle(center, radius, original > medium);
 
-            this.destination = (int) min(max(0, m * original + b), VALUE_LIMIT - 1);
+            this.destination = (int) circle.y(original);
         }
 
         private static int maximal(final int original, final int steps) {

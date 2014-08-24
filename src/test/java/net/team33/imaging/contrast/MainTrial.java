@@ -17,7 +17,7 @@ public class MainTrial {
             = Paths.get("src", "test", "resources", "MainTrial2.png").toAbsolutePath().normalize();
     private static final Path TEST_PATH
             = Paths.get("target", "test.io", MainTrial.class.getName());
-    private static final String TEST_MAIN99_IMG = "testMain99.png";
+    private static final String TEST_MAIN99_IMG = "testMain99a.png";
 
     @BeforeClass
     public static void doBeforeClass() throws IOException {
@@ -55,6 +55,6 @@ public class MainTrial {
     public void testMain99() throws Exception {
         final Path path = TEST_PATH.resolve(TEST_MAIN99_IMG);
         Files.copy(RESOURCE_PATH, path);
-        main(new String[]{path.toString(), "32", "100"});
+        main(new String[]{path.toString(), "50", "100"});
     }
 }
