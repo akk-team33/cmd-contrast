@@ -10,7 +10,6 @@ public class RGBPixel {
     private static final int BLUE_BITS = 0x000000ff;
     private static final int ALPHA_MAX = 0xff000000;
     private static final int VALUE_LIMIT = 0x10000;
-
     private final int red;
     private final int green;
     private final int blue;
@@ -45,6 +44,18 @@ public class RGBPixel {
 
         //noinspection NumericCastThatLosesPrecision
         return (int) ((circle.y(sharp) * intensity) + (sharp * (1.0 - intensity)));
+    }
+
+    public final int getRed() {
+        return red;
+    }
+
+    public final int getGreen() {
+        return green;
+    }
+
+    public final int getBlue() {
+        return blue;
     }
 
     public final int toRgb() {

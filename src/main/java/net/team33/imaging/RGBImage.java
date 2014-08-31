@@ -5,6 +5,9 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static net.team33.imaging.Deviation.MAX_RADIUS;
 
@@ -16,29 +19,33 @@ public class RGBImage {
     private final int width;
     private final int height;
     private final int type;
-    private final RGBPixel[] pixels;
+    private final int[] pixelValues;
 
     private RGBImage(final int width, final int height, final int type, final PixelSupplier supplier) {
         this.width = width;
         this.height = height;
         this.type = type;
-        this.pixels = new RGBPixel[width * height];
-//        final ExecutorService service = Executors.newWorkStealingPool();
+        this.pixelValues = new int[width * height * 3];
+        final ExecutorService service = Executors.newWorkStealingPool();
         for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                final int index = (y * width) + x;
-                pixels[index] = supplier.supply(index, width);
-            }
-            if (0 == (y % 64))
+//            for (int x = 0; x < width; ++x) {
+//                final int index = (y * width) + x;
+//                final RGBPixel pixel = supplier.supply(index, width);
+//                pixelValues[3 * index] = pixel.getRed();
+//                pixelValues[(3 * index) + 1] = pixel.getGreen();
+//                pixelValues[(3 * index) + 2] = pixel.getBlue();
+//            }
+            service.execute(new LineWise(y * width, supplier));
+            if (0 == (y % 64)) {
                 System.out.print('.');
-//            service.execute(new LineWise(y * width, supplier));
+            }
         }
-//        service.shutdown();
-//        try {
-//            service.awaitTermination(10, TimeUnit.SECONDS);
-//        } catch (final InterruptedException e) {
-//            throw new IllegalStateException(e);
-//        }
+        service.shutdown();
+        try {
+            service.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (final InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public static RGBImage read(final Path path) throws IOException {
@@ -60,24 +67,28 @@ public class RGBImage {
 
     public final BufferedImage build() {
         final BufferedImage result = new BufferedImage(width, height, type);
-        for (int index = 0; index < pixels.length; ++index) {
-            result.setRGB(index % width, index / width, pixels[index].toRgb());
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                result.setRGB(x, y, getPixel(x, y).toRgb());
+            }
         }
         return result;
     }
 
     public final RGBImage blurred(final int radius) {
-        try {
-            if (MAX_RADIUS < radius) {
-                //noinspection TailRecursion
-                return blurred(MAX_RADIUS).blurred(radius - MAX_RADIUS);
-            } else {
-                return blurred(HORIZONTAL, Deviation.values(radius)).blurred(VERTICAL, Deviation.values(radius));
-            }
-        } finally {
-            System.out.println('+');
-            System.gc();
+        RGBImage result = this;
+        int restRadius = radius;
+        while (MAX_RADIUS < restRadius) {
+            System.out.print(restRadius);
+            result = result
+                    .blurred(HORIZONTAL, Deviation.values(MAX_RADIUS))
+                    .blurred(VERTICAL, Deviation.values(MAX_RADIUS));
+            restRadius -= MAX_RADIUS;
         }
+        System.out.print(restRadius);
+        return result
+                .blurred(HORIZONTAL, Deviation.values(restRadius))
+                .blurred(VERTICAL, Deviation.values(restRadius));
     }
 
     private RGBImage blurred(final Direction direction, final Deviation[] deviations) {
@@ -90,7 +101,12 @@ public class RGBImage {
     }
 
     public final RGBPixel getPixel(final int x, final int y) {
-        return pixels[x + (y * width)];
+        final int index = x + (y * width);
+        return new RGBPixel(
+                pixelValues[3 * index],
+                pixelValues[(3 * index) + 1],
+                pixelValues[(3 * index) + 2]
+        );
     }
 
     public final RGBPixel getPixel(final Point point) {
@@ -154,7 +170,10 @@ public class RGBImage {
         public final void run() {
             for (int x = 0; x < width; ++x) {
                 final int index = startIndex + x;
-                pixels[index] = supplier.supply(index, width);
+                final RGBPixel pixel = supplier.supply(index, width);
+                pixelValues[3 * index] = pixel.getRed();
+                pixelValues[(3 * index) + 1] = pixel.getGreen();
+                pixelValues[(3 * index) + 2] = pixel.getBlue();
             }
         }
     }
