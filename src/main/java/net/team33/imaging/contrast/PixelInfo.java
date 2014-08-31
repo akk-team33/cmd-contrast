@@ -1,7 +1,7 @@
 package net.team33.imaging.contrast;
 
-import net.team33.imaging.contrast.doubles.Circle;
-import net.team33.imaging.contrast.doubles.Point;
+import net.team33.imaging.doubles.Circle;
+import net.team33.imaging.doubles.Point;
 
 import java.awt.image.BufferedImage;
 import java.util.Random;

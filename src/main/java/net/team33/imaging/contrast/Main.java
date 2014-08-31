@@ -1,7 +1,8 @@
 package net.team33.imaging.contrast;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
+import net.team33.imaging.Format;
+import net.team33.imaging.RGBImage;
+
 import java.io.IOException;
 
 // 73948 (14:18)
@@ -12,7 +13,7 @@ public final class Main {
     private Main() {
     }
 
-    public static void main(final String[] args){
+    public static void main(final String[] args) {
         try {
             proceed(Args.build(args));
         } catch (final Args.Problem caught) {
@@ -24,48 +25,8 @@ public final class Main {
 
     private static void proceed(final Args args) throws IOException {
         System.out.println(args);
-        final BufferedImage image = ImageIO.read(args.getSourcePath().toFile());
-        final Result result = proceed(args, image, image.getWidth(), image.getHeight());
-        System.out.println('$');
-        ImageIO.write(result.getMinimum(), "png", args.getMinimumPath().toFile());
-        ImageIO.write(result.getMedium(), "png", args.getMediumPath().toFile());
-        ImageIO.write(result.getMaximum(), "png", args.getMaximumPath().toFile());
-        ImageIO.write(result.getDestination(), "png", args.getDestinationPath().toFile());
-    }
-
-    private static Result proceed(final Args args, final BufferedImage image, final int width, final int height) {
-        System.out.println("width:  " + width);
-        System.out.println("height: " + height);
-        final Result result = new Result(image, width, height);
-        final int distance = Math.max(1, height / 120);
-        for (int y = 0; y < height; ++y) {
-            if (y % distance == 0) {
-                System.out.print('.');
-            }
-            proceed(args, image, y, width, height, result);
-        }
-        return result;
-    }
-
-    private static void proceed(
-            final Args args, final BufferedImage image, final int y,
-            final int width, final int height, final Result result) {
-
-        for (int x = 0; x < width; ++x) {
-            //System.out.print('.');
-            proceed(args, image, x, y, width, height, result);
-        }
-    }
-
-    private static void proceed(
-            final Args args, final BufferedImage image, final int x, final int y,
-            final int width, final int height, final Result result) {
-        // final int rgb = image.getRGB(x, y);
-        // System.out.printf("x(%d), y(%d): rgb(%08x)%n", x, y, rgb);
-        final PixelInfo pixelInfo = PixelInfo.valueOf(args, image, x, y, width, height);
-        result.getMinimum().setRGB(x, y, pixelInfo.getMinimum());
-        result.getMaximum().setRGB(x, y, pixelInfo.getMaximum());
-        result.getMedium().setRGB(x, y, pixelInfo.getMedium());
-        result.getDestination().setRGB(x, y, pixelInfo.getDestination());
+        RGBImage.read(args.getSourcePath())
+                .enhanced(args.getRadius(), args.getFactor())
+                .write(Format.PNG, args.getDestinationPath());
     }
 }

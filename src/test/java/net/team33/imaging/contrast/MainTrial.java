@@ -55,6 +55,6 @@ public class MainTrial {
     public void testMain99() throws Exception {
         final Path path = TEST_PATH.resolve(TEST_MAIN99_IMG);
         Files.copy(RESOURCE_PATH, path);
-        main(new String[]{path.toString(), "50", "100"});
+        main(new String[]{path.toString(), "250", "0.25"});
     }
 }

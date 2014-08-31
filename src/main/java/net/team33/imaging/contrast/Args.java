@@ -64,18 +64,6 @@ public class Args {
         return format("Args(sourcePath(%s), radius(%d), factor(%s)}", sourcePath, radius, factor);
     }
 
-    public Path getMinimumPath() throws IOException {
-        return outputPath(sourcePath, "minimum.png");
-    }
-
-    public Path getMediumPath() throws IOException {
-        return outputPath(sourcePath, "medium.png");
-    }
-
-    public Path getMaximumPath() throws IOException {
-        return outputPath(sourcePath, "maximum.png");
-    }
-
     public Path getDestinationPath() throws IOException {
         return outputPath(sourcePath, "destination.png");
     }

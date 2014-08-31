@@ -1,4 +1,4 @@
-package net.team33.imaging.contrast.doubles;
+package net.team33.imaging.doubles;
 
 import net.team33.imaging.contrast.Rgb;
 
