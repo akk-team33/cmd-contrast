@@ -1,15 +1,15 @@
 package net.team33.imaging;
 
+import net.team33.imaging.math.Dispersion;
+
 import javax.imageio.ImageIO;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static net.team33.imaging.Deviation.MAX_RADIUS;
 
 public class RGBImage {
 
@@ -76,28 +76,16 @@ public class RGBImage {
     }
 
     public final RGBImage blurred(final int radius) {
-        RGBImage result = this;
-        int restRadius = radius;
-        while (MAX_RADIUS < restRadius) {
-            System.out.print(restRadius);
-            result = result
-                    .blurred(HORIZONTAL, Deviation.values(MAX_RADIUS))
-                    .blurred(VERTICAL, Deviation.values(MAX_RADIUS));
-            restRadius -= MAX_RADIUS;
+        try {
+            final Dispersion dispersion = Dispersion.forRadius(radius);
+            return blurred(HORIZONTAL, dispersion).blurred(VERTICAL, dispersion);
+        } finally {
+            System.out.println(" blurred ");
         }
-        System.out.print(restRadius);
-        return result
-                .blurred(HORIZONTAL, Deviation.values(restRadius))
-                .blurred(VERTICAL, Deviation.values(restRadius));
     }
 
-    private RGBImage blurred(final Direction direction, final Deviation[] deviations) {
-        try {
-            return new RGBImage(width, height, type, new Blurring(this, direction, deviations));
-        } finally {
-            System.out.println('-');
-            //System.gc();
-        }
+    private RGBImage blurred(final Direction direction, final Dispersion dispersion) {
+        return new RGBImage(width, height, type, new Blurring(this, direction, dispersion));
     }
 
     public final RGBPixel getPixel(final int x, final int y) {
@@ -117,8 +105,7 @@ public class RGBImage {
         try {
             return new RGBImage(width, height, type, new Enhancing(this, blurred(radius), intensity));
         } finally {
-            System.out.println("*");
-            System.gc();
+            System.out.println(" enhanced ");
         }
     }
 
@@ -136,21 +123,23 @@ public class RGBImage {
     private static class Blurring implements PixelSupplier {
         private final RGBImage origin;
         private final Direction direction;
-        private final Deviation[] deviations;
+        private final Dispersion dispersion;
 
-        private Blurring(final RGBImage origin, final Direction direction, final Deviation[] deviations) {
+        private Blurring(final RGBImage origin, final Direction direction, final Dispersion dispersion) {
             this.origin = origin;
             this.direction = direction;
-            this.deviations = deviations;
+            this.dispersion = dispersion;
         }
 
         @Override
         public final RGBPixel supply(final int flatIndex, final int lineWidth) {
             final RGBPixel.Builder builder = RGBPixel.builder();
-            for (final Deviation deviation : deviations) {
-                final Point point = direction.point(flatIndex % lineWidth, flatIndex / lineWidth, deviation.getDelta());
-                if ((0 <= point.x) && (point.x < origin.width) && (0 <= point.y) && (point.y < origin.height)) {
-                    builder.add(origin.getPixel(point), deviation.getWeight());
+            for (int distance = dispersion.getMinDistance(), limit = dispersion.getEffectiveRadius();
+                 distance <= limit; ++distance) {
+
+                final Point p = direction.point(flatIndex % lineWidth, flatIndex / lineWidth, distance);
+                if ((0 <= p.x) && (p.x < origin.width) && (0 <= p.y) && (p.y < origin.height)) {
+                    builder.add(origin.getPixel(p), dispersion.getWeight(distance));
                 }
             }
             return builder.build();

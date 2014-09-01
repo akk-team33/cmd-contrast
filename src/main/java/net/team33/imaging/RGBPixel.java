@@ -85,5 +85,5 @@ public class RGBPixel {
                     (int) ((blue + (count / 2)) / count)
             );
         }
+        }
     }
-}

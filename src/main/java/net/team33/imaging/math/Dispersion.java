@@ -81,4 +81,8 @@ public class Dispersion {
             return 0;
         }
     }
+
+    public final int getMinDistance() {
+        return -effectiveRadius;
+    }
 }

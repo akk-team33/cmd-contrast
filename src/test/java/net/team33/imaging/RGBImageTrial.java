@@ -139,4 +139,25 @@ public class RGBImageTrial {
                 .enhanced(500, 0.25)
                 .write(Format.PNG, TEST_PATH.resolve("testEnhanced500_025.png"));
     }
+
+    @Test
+    public final void testEnhanced999_050() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .enhanced(999, 0.5)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced999_050.png"));
+    }
+
+    @Test
+    public final void testEnhanced999_030() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .enhanced(999, 0.3)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced999_030.png"));
+    }
+
+    @Test
+    public final void testEnhanced999_010() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .enhanced(999, 0.1)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced999_010.png"));
+    }
 }
