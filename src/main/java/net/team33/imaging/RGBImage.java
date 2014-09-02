@@ -3,13 +3,14 @@ package net.team33.imaging;
 import net.team33.imaging.math.Dispersion;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class RGBImage {
 
@@ -26,25 +27,33 @@ public class RGBImage {
         this.height = height;
         this.type = type;
         this.pixelValues = new int[width * height * 3];
+
+        final ErrorHandler errorHandler = new ErrorHandler();
         final ExecutorService service = Executors.newWorkStealingPool();
-        for (int y = 0; y < height; ++y) {
+        for (int y = 0; (y < height) && errorHandler.isClean(); ++y) {
 //            for (int x = 0; x < width; ++x) {
-//                final int index = (y * width) + x;
-//                final RGBPixel pixel = supplier.supply(index, width);
-//                pixelValues[3 * index] = pixel.getRed();
-//                pixelValues[(3 * index) + 1] = pixel.getGreen();
-//                pixelValues[(3 * index) + 2] = pixel.getBlue();
+//                setPixel(x, y, supplier.supply(x, y));
 //            }
-            service.execute(new LineWise(y * width, supplier));
+            service.execute(new LineWise(y, supplier, errorHandler));
             if (0 == (y % 64)) {
                 System.out.print('.');
             }
         }
-        service.shutdown();
         try {
-            service.awaitTermination(10, TimeUnit.SECONDS);
+            if (errorHandler.isDirty()) {
+                service.shutdownNow();
+            } else {
+                service.shutdown();
+            }
+            if (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+                throw new InterruptedException("timeout occurred");
+            }
         } catch (final InterruptedException e) {
-            throw new IllegalStateException(e);
+            errorHandler.accept(e);
+        }
+        if (errorHandler.isDirty()) {
+            //noinspection ProhibitedExceptionThrown,AccessingNonPublicFieldOfAnotherObject
+            throw new Error(errorHandler.caught);
         }
     }
 
@@ -57,7 +66,7 @@ public class RGBImage {
                 image.getWidth(),
                 image.getHeight(),
                 image.getType(),
-                (i, w) -> new RGBPixel(image.getRGB(i % w, i / w))
+                (x, y) -> new RGBPixel(image.getRGB(x, y))
         );
     }
 
@@ -88,8 +97,12 @@ public class RGBImage {
         return new RGBImage(width, height, type, new Blurring(this, direction, dispersion));
     }
 
+    public final RGBPixel getPixel(final Point point) {
+        return getPixel(point.x, point.y);
+    }
+
     public final RGBPixel getPixel(final int x, final int y) {
-        final int index = x + (y * width);
+        final int index = indexOf(x, y);
         return new RGBPixel(
                 pixelValues[3 * index],
                 pixelValues[(3 * index) + 1],
@@ -97,8 +110,15 @@ public class RGBImage {
         );
     }
 
-    public final RGBPixel getPixel(final Point point) {
-        return getPixel(point.x, point.y);
+    private void setPixel(final int x, final int y, final RGBPixel pixel) {
+        final int index = indexOf(x, y);
+        pixelValues[3 * index] = pixel.getRed();
+        pixelValues[(3 * index) + 1] = pixel.getGreen();
+        pixelValues[(3 * index) + 2] = pixel.getBlue();
+    }
+
+    private int indexOf(final int x, final int y) {
+        return x + (y * width);
     }
 
     public final RGBImage enhanced(final int radius, final double intensity) {
@@ -111,7 +131,7 @@ public class RGBImage {
 
     @FunctionalInterface
     private interface PixelSupplier {
-        RGBPixel supply(int flatIndex, int lineWidth);
+        RGBPixel supply(int x, int y);
     }
 
     @FunctionalInterface
@@ -132,12 +152,12 @@ public class RGBImage {
         }
 
         @Override
-        public final RGBPixel supply(final int flatIndex, final int lineWidth) {
+        public final RGBPixel supply(final int x, final int y) {
             final RGBPixel.Builder builder = RGBPixel.builder();
             for (int distance = dispersion.getMinDistance(), limit = dispersion.getEffectiveRadius();
                  distance <= limit; ++distance) {
 
-                final Point p = direction.point(flatIndex % lineWidth, flatIndex / lineWidth, distance);
+                final Point p = direction.point(x, y, distance);
                 if ((0 <= p.x) && (p.x < origin.width) && (0 <= p.y) && (p.y < origin.height)) {
                     builder.add(origin.getPixel(p), dispersion.getWeight(distance));
                 }
@@ -146,23 +166,45 @@ public class RGBImage {
         }
     }
 
-    private class LineWise implements Runnable {
-        private final int startIndex;
-        private final PixelSupplier supplier;
+    private static class ErrorHandler implements Consumer<Throwable> {
+        private volatile Throwable caught = null;
+        @Override
+        public final synchronized void accept(final Throwable throwable) {
+            if (null == caught) {
+                caught = throwable;
+            } else {
+                caught.addSuppressed(throwable);
+            }
+        }
 
-        private LineWise(final int startIndex, final PixelSupplier supplier) {
-            this.startIndex = startIndex;
+        public final boolean isDirty() {
+            return null != caught;
+        }
+
+        public final boolean isClean() {
+            return null == caught;
+        }
+    }
+
+    private class LineWise implements Runnable {
+        private final int y;
+        private final PixelSupplier supplier;
+        private final Consumer<Throwable> errorHandler;
+
+        private LineWise(final int y, final PixelSupplier supplier, final Consumer<Throwable> errorHandler) {
+            this.y = y;
             this.supplier = supplier;
+            this.errorHandler = errorHandler;
         }
 
         @Override
         public final void run() {
-            for (int x = 0; x < width; ++x) {
-                final int index = startIndex + x;
-                final RGBPixel pixel = supplier.supply(index, width);
-                pixelValues[3 * index] = pixel.getRed();
-                pixelValues[(3 * index) + 1] = pixel.getGreen();
-                pixelValues[(3 * index) + 2] = pixel.getBlue();
+            try {
+                for (int x = 0; x < width; ++x) {
+                    setPixel(x, y, supplier.supply(x, y));
+                }
+            } catch (final Throwable e) {
+                errorHandler.accept(e);
             }
         }
     }
@@ -179,9 +221,7 @@ public class RGBImage {
         }
 
         @Override
-        public RGBPixel supply(final int flatIndex, final int lineWidth) {
-            final int x = flatIndex % lineWidth;
-            final int y = flatIndex / lineWidth;
+        public final RGBPixel supply(final int x, final int y) {
             return RGBPixel.enhanced(sharp.getPixel(x, y), blurred.getPixel(x, y), intensity);
         }
     }
