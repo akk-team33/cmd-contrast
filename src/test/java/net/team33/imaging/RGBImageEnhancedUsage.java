@@ -51,10 +51,10 @@ public class RGBImageEnhancedUsage {
 
     //@Ignore
     @Test
-    public final void enhance_2500_xxx() throws IOException {
-        final double[] intensities = {0.8, 0.4, 0.2, 0.1, 0.05};
+    public final void enhance_5000_xxx() throws IOException {
+        final double[] intensities = {0.5, 0.4, 0.3, 0.2, 0.1};
         for (double intensity : intensities) {
-            enhance(2500, intensity);
+            enhance(5000, intensity);
         }
     }
 

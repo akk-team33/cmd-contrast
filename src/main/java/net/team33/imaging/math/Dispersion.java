@@ -2,12 +2,20 @@ package net.team33.imaging.math;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Dispersion {
 
     private static final BigInteger MAX_WEIGHT = BigInteger.valueOf(0x00ffffff);
+    private static final Map<BigInteger, BigInteger> CACHE = new HashMap<>(5000);
 
+    static {
+        for (int i = 100; i < 5000; i += 100) {
+            factorial(BigInteger.valueOf(i));
+        }
+    }
     private final int nominalRadius;
     private final int effectiveRadius;
     private final int[] weights;
@@ -50,10 +58,16 @@ public class Dispersion {
     }
 
     private static BigInteger factorial(final BigInteger n) {
-        if (0 <= BigInteger.ONE.compareTo(n)) {
-            return BigInteger.ONE;
-        } else {
-            return n.multiply(factorial(n.subtract(BigInteger.ONE)));
+        synchronized (CACHE) {
+            if (CACHE.containsKey(n)) {
+                return CACHE.get(n);
+            } else if (0 <= BigInteger.ONE.compareTo(n)) {
+                return BigInteger.ONE;
+            } else {
+                final BigInteger result = n.multiply(factorial(n.subtract(BigInteger.ONE)));
+                CACHE.put(n, result);
+                return result;
+            }
         }
     }
 
