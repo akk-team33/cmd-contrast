@@ -1,41 +1,43 @@
 package net.team33.imaging.math;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Math.exp;
+import static java.lang.Math.log;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
 public class GaussDispersion {
 
-    private static final BigInteger MAX_WEIGHT = BigInteger.valueOf(0x00ffffff);
-    private static final double THRESHOLD = 10000.0;
+    @SuppressWarnings("ConstantMathCall")
     private static final double SQRT_2_PI = sqrt(2 * Math.PI);
+    private static final double MEDIAN_RADIUS_STD_DEVIATION_FACTOR = 2.0 * sqrt(2.0 * log(2.0)) / 2;
 
     private final double stdDeviation;
-    private final int effectiveRadius; // weights become irrelevant
+    private final double medianRadius;
+    private final int effectiveRadius;
     private final double[] weights;
 
     @SuppressWarnings("NumericCastThatLosesPrecision")
-    GaussDispersion(final double stdDeviation, final double maxWeight, final double quote) {
-        this.stdDeviation = stdDeviation;
-        final List<Double> bigWeights = new ArrayList<>((int) stdDeviation);
+    GaussDispersion(final double medianRadius, final double maxWeight, final double quote) {
+        this.medianRadius = medianRadius;
+        this.stdDeviation = medianRadius / MEDIAN_RADIUS_STD_DEVIATION_FACTOR;
+        final List<Double> weightList = new ArrayList<>((int) stdDeviation);
         final double max = gauss(0.0, stdDeviation);
         final double factor = maxWeight / max;
         double next = max;
         double sum = next;
-        bigWeights.add(factor * next);
+        weightList.add(factor * next);
         for (int distance = 1; sum < quote; ++distance) {
             next = gauss(distance, stdDeviation);
             sum += 2 * next;
-            bigWeights.add(factor * next);
+            weightList.add(factor * next);
         }
-        effectiveRadius = bigWeights.size() - 1;
-        weights = new double[bigWeights.size()];
+        effectiveRadius = weightList.size() - 1;
+        weights = new double[weightList.size()];
         for (int index = 0; index < weights.length; ++index) {
-            weights[index] = bigWeights.get(index);
+            weights[index] = weightList.get(index);
         }
     }
 

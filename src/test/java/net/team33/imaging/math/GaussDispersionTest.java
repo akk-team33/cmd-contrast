@@ -40,15 +40,15 @@ public class GaussDispersionTest {
     public final void testGetWeight___1() {
         assertEquals(
                 Arrays.asList(0, 1, 2, 1, 0),
-                toList(GaussDispersion.forRadius(1))
+                toList(new GaussDispersion(1, 2, 0.9), 2)
         );
     }
 
     @Test
     public final void testGetWeight___2() {
         assertEquals(
-                Arrays.asList(1, 4, 6, 4, 1),
-                toList(GaussDispersion.forRadius(2))
+                Arrays.asList(0, 1, 4, 6, 4, 1, 0),
+                toList(new GaussDispersion(1.307483, 6, 0.9), 3)
         );
     }
 
@@ -56,7 +56,7 @@ public class GaussDispersionTest {
     public final void testGetWeight___3() {
         assertEquals(
                 Arrays.asList(1, 6, 15, 20, 15, 6, 1),
-                toList(new GaussDispersion(1.3185, 20, .99))
+                toList(new GaussDispersion(1.6, 20, .99))
         );
     }
 
