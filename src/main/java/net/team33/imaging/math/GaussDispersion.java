@@ -14,19 +14,23 @@ public class GaussDispersion {
     private static final double THRESHOLD = 10000.0;
     private static final double SQRT_2_PI = sqrt(2 * Math.PI);
 
-    private final int nominalRadius; // standard deviation
+    private final double stdDeviation;
     private final int effectiveRadius; // weights become irrelevant
     private final double[] weights;
 
-    private GaussDispersion(final int nominalRadius) {
-        this.nominalRadius = nominalRadius;
-        final List<Double> bigWeights = new ArrayList<>(nominalRadius);
-        final double max = gauss(0.0, nominalRadius);
-        final double limit = max / THRESHOLD;
+    @SuppressWarnings("NumericCastThatLosesPrecision")
+    GaussDispersion(final double stdDeviation, final double maxWeight, final double quote) {
+        this.stdDeviation = stdDeviation;
+        final List<Double> bigWeights = new ArrayList<>((int) stdDeviation);
+        final double max = gauss(0.0, stdDeviation);
+        final double factor = maxWeight / max;
         double next = max;
-        for (int distance = 1; next > limit; ++distance) {
-            bigWeights.add(next);
-            next = gauss(distance, nominalRadius);
+        double sum = next;
+        bigWeights.add(factor * next);
+        for (int distance = 1; sum < quote; ++distance) {
+            next = gauss(distance, stdDeviation);
+            sum += 2 * next;
+            bigWeights.add(factor * next);
         }
         effectiveRadius = bigWeights.size() - 1;
         weights = new double[bigWeights.size()];
@@ -35,18 +39,8 @@ public class GaussDispersion {
         }
     }
 
-    private static int compression(final BigInteger reference) {
-        BigInteger compressed = reference;
-        int result = 0;
-        while (0 < compressed.compareTo(MAX_WEIGHT)) {
-            compressed = compressed.shiftRight(1);
-            result += 1;
-        }
-        return result;
-    }
-
     public static GaussDispersion forRadius(final int radius) {
-        return new GaussDispersion(radius);
+        return new GaussDispersion(radius, radius, 0.90);
     }
 
     private double gauss(final double x, final double sigma) {
@@ -56,7 +50,7 @@ public class GaussDispersion {
     }
 
     public final int getNominalRadius() {
-        return nominalRadius;
+        return (int) stdDeviation;
     }
 
     public final int getEffectiveRadius() {
