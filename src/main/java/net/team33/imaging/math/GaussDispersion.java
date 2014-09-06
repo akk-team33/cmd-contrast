@@ -41,8 +41,8 @@ public class GaussDispersion {
         }
     }
 
-    public static GaussDispersion forRadius(final int radius) {
-        return new GaussDispersion(radius, radius, 0.90);
+    public static GaussDispersion forRadius(final double radius) {
+        return new GaussDispersion(radius, 10, 0.99);
     }
 
     private double gauss(final double x, final double sigma) {
