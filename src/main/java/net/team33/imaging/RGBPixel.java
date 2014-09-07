@@ -64,26 +64,26 @@ public class RGBPixel {
 
     @SuppressWarnings({"AccessingNonPublicFieldOfAnotherObject", "ReturnOfThis"})
     public static class Builder {
-        private long red = 0;
-        private long green = 0;
-        private long blue = 0;
-        private long count = 0;
+        private double red = 0;
+        private double green = 0;
+        private double blue = 0;
+        private double weight = 0;
 
-        public final Builder add(final RGBPixel pixel, final long weight) {
-            red += pixel.red * weight;
-            green += pixel.green * weight;
-            blue += pixel.blue * weight;
-            count += weight;
+        public final Builder add(final RGBPixel pixel, final double weight) {
+            this.red += pixel.red * weight;
+            this.green += pixel.green * weight;
+            this.blue += pixel.blue * weight;
+            this.weight += weight;
             return this;
         }
 
         public final RGBPixel build() {
             //noinspection NumericCastThatLosesPrecision
             return new RGBPixel(
-                    (int) ((red + (count / 2)) / count),
-                    (int) ((green + (count / 2)) / count),
-                    (int) ((blue + (count / 2)) / count)
+                    (int) ((red + (weight / 2)) / weight),
+                    (int) ((green + (weight / 2)) / weight),
+                    (int) ((blue + (weight / 2)) / weight)
             );
         }
-        }
     }
+}

@@ -1,6 +1,6 @@
 package net.team33.imaging;
 
-import net.team33.imaging.math.Dispersion;
+import net.team33.imaging.math.GaussDispersion;
 
 import javax.imageio.ImageIO;
 import java.awt.Point;
@@ -45,7 +45,7 @@ public class RGBImage {
             } else {
                 service.shutdown();
             }
-            if (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+            if (!service.awaitTermination(5, TimeUnit.MINUTES)) {
                 throw new InterruptedException("timeout occurred");
             }
         } catch (final InterruptedException e) {
@@ -84,16 +84,16 @@ public class RGBImage {
         return result;
     }
 
-    public final RGBImage blurred(final int radius) {
+    public final RGBImage blurred(final double radius) {
         try {
-            final Dispersion dispersion = Dispersion.forRadius(radius);
+            final GaussDispersion dispersion = GaussDispersion.forRadius(radius);
             return blurred(HORIZONTAL, dispersion).blurred(VERTICAL, dispersion);
         } finally {
             System.out.println(" blurred ");
         }
     }
 
-    private RGBImage blurred(final Direction direction, final Dispersion dispersion) {
+    private RGBImage blurred(final Direction direction, final GaussDispersion dispersion) {
         return new RGBImage(width, height, type, new Blurring(this, direction, dispersion));
     }
 
@@ -143,9 +143,9 @@ public class RGBImage {
     private static class Blurring implements PixelSupplier {
         private final RGBImage origin;
         private final Direction direction;
-        private final Dispersion dispersion;
+        private final GaussDispersion dispersion;
 
-        private Blurring(final RGBImage origin, final Direction direction, final Dispersion dispersion) {
+        private Blurring(final RGBImage origin, final Direction direction, final GaussDispersion dispersion) {
             this.origin = origin;
             this.direction = direction;
             this.dispersion = dispersion;
@@ -168,6 +168,7 @@ public class RGBImage {
 
     private static class ErrorHandler implements Consumer<Throwable> {
         private volatile Throwable caught = null;
+
         @Override
         public final synchronized void accept(final Throwable throwable) {
             if (null == caught) {
