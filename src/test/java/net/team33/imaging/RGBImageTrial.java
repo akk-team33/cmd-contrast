@@ -17,11 +17,7 @@ public class RGBImageTrial {
     private static final Path ORIGINAL_PATH;
 
     static {
-        //RESOURCE_PATH = Paths.get("src", "test", "resources", "MainTrial.png").toAbsolutePath().normalize();
-        RESOURCE_PATH = Paths
-                .get("C:\\Users\\andi\\Pictures\\Alben\\Erinnerungen\\2014\\Lechweg\\Tag02\\Peng\\DSC_2963\\")
-                .resolve("DSC_2963_0.png")
-                .toAbsolutePath().normalize();
+        RESOURCE_PATH = Paths.get("src", "test", "resources", "MainTrial.png").toAbsolutePath().normalize();
         TEST_PATH = Paths.get("target", "test.io", RGBImageTrial.class.getName());
         ORIGINAL_PATH = TEST_PATH.resolve("original.png");
     }
@@ -40,6 +36,13 @@ public class RGBImageTrial {
     }
 
     @Test
+    public final void testBlurred000() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .blurred(0)
+                .write(Format.PNG, TEST_PATH.resolve("testBlurred000.png"));
+    }
+
+    @Test
     public final void testBlurred001() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
                 .blurred(1)
@@ -54,52 +57,38 @@ public class RGBImageTrial {
     }
 
     @Test
-    public final void testBlurred004() throws IOException {
+    public final void testBlurred005() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .blurred(4)
-                .write(Format.PNG, TEST_PATH.resolve("testBlurred004.png"));
+                .blurred(5)
+                .write(Format.PNG, TEST_PATH.resolve("testBlurred005.png"));
     }
 
     @Test
-    public final void testBlurred008() throws IOException {
+    public final void testBlurred010() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .blurred(8)
-                .write(Format.PNG, TEST_PATH.resolve("testBlurred008.png"));
+                .blurred(10)
+                .write(Format.PNG, TEST_PATH.resolve("testBlurred010.png"));
     }
 
     @Test
-    public final void testBlurred016() throws IOException {
+    public final void testBlurred040() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .blurred(16)
-                .write(Format.PNG, TEST_PATH.resolve("testBlurred016.png"));
+                .blurred(40)
+                .write(Format.PNG, TEST_PATH.resolve("testBlurred040.png"));
     }
 
     @Test
-    public final void testBlurred032() throws IOException {
+    public final void testBlurred160() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .blurred(32)
-                .write(Format.PNG, TEST_PATH.resolve("testBlurred032.png"));
+                .blurred(160)
+                .write(Format.PNG, TEST_PATH.resolve("testBlurred160.png"));
     }
 
     @Test
-    public final void testBlurred064() throws IOException {
+    public final void testBlurred640() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .blurred(64)
-                .write(Format.PNG, TEST_PATH.resolve("testBlurred064.png"));
-    }
-
-    @Test
-    public final void testBlurred128() throws IOException {
-        RGBImage.read(ORIGINAL_PATH)
-                .blurred(128)
-                .write(Format.PNG, TEST_PATH.resolve("testBlurred128.png"));
-    }
-
-    @Test
-    public final void testEnhanced007_100() throws IOException {
-        RGBImage.read(ORIGINAL_PATH)
-                .enhanced(7, 1.0)
-                .write(Format.PNG, TEST_PATH.resolve("testEnhanced007_100.png"));
+                .blurred(640)
+                .write(Format.PNG, TEST_PATH.resolve("testBlurred640.png"));
     }
 
     @Test
@@ -110,30 +99,65 @@ public class RGBImageTrial {
     }
 
     @Test
-    public final void testEnhanced030_080() throws IOException {
+    public final void testEnhanced060_040() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .enhanced(30, 0.8)
-                .write(Format.PNG, TEST_PATH.resolve("testEnhanced030_080.png"));
+                .enhanced(60, 0.4)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced060_040.png"));
     }
 
     @Test
-    public final void testEnhanced060_060() throws IOException {
+    public final void testEnhanced060_090() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .enhanced(60, 0.6)
-                .write(Format.PNG, TEST_PATH.resolve("testEnhanced060_060.png"));
+                .enhanced(60, 0.9)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced060_090.png"));
     }
 
     @Test
-    public final void testEnhanced120_040() throws IOException {
+    public final void testEnhanced240_030() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .enhanced(120, 0.4)
-                .write(Format.PNG, TEST_PATH.resolve("testEnhanced120_040.png"));
+                .enhanced(240, 0.3)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced240_030.png"));
     }
 
     @Test
-    public final void testEnhanced240_020() throws IOException {
+    public final void testEnhanced240_050() throws IOException {
         RGBImage.read(ORIGINAL_PATH)
-                .enhanced(240, 0.2)
-                .write(Format.PNG, TEST_PATH.resolve("testEnhanced240_020.png"));
+                .enhanced(240, 0.5)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced240_050.png"));
+    }
+
+    @Test
+    public final void testEnhanced240_100() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .enhanced(240, 1.0)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced240_100.png"));
+    }
+
+    @Test
+    public final void testEnhanced500_025() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .enhanced(500, 0.25)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced500_025.png"));
+    }
+
+    @Test
+    public final void testEnhanced999_050() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .enhanced(999, 0.5)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced999_050.png"));
+    }
+
+    @Test
+    public final void testEnhanced999_030() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .enhanced(999, 0.3)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced999_030.png"));
+    }
+
+    @Test
+    public final void testEnhanced999_010() throws IOException {
+        RGBImage.read(ORIGINAL_PATH)
+                .enhanced(999, 0.1)
+                .write(Format.PNG, TEST_PATH.resolve("testEnhanced999_010.png"));
     }
 }

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Dispersion {
+public class BinomialDispersion {
 
     private static final BigInteger MAX_WEIGHT = BigInteger.valueOf(0x00ffffff);
     private static final Map<BigInteger, BigInteger> CACHE = new HashMap<>(5000);
@@ -16,11 +16,12 @@ public class Dispersion {
             factorial(BigInteger.valueOf(i));
         }
     }
+
     private final int nominalRadius;
     private final int effectiveRadius;
     private final int[] weights;
 
-    private Dispersion(final int nominalRadius) {
+    private BinomialDispersion(final int nominalRadius) {
         this.nominalRadius = nominalRadius;
         final List<BigInteger> bigWeights = new ArrayList<>(nominalRadius + 1);
         for (int k = nominalRadius, n = 2 * nominalRadius; k <= n; ++k) {
@@ -71,8 +72,8 @@ public class Dispersion {
         }
     }
 
-    public static Dispersion forRadius(final int radius) {
-        return new Dispersion(radius);
+    public static BinomialDispersion forRadius(final int radius) {
+        return new BinomialDispersion(radius);
     }
 
     public final int getNominalRadius() {

@@ -8,17 +8,17 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class DispersionTest {
+public class BinomialDispersionTest {
 
-    private static List<Integer> toIntegerList(final Dispersion subject) {
+    private static List<Integer> toIntegerList(final BinomialDispersion subject) {
         return toIntegerList(subject, subject.getNominalRadius());
     }
 
-    private static List<Integer> toIntegerList(final Dispersion subject, final int radius) {
+    private static List<Integer> toIntegerList(final BinomialDispersion subject, final int radius) {
         return toIntegerList(subject, -radius, radius);
     }
 
-    private static List<Integer> toIntegerList(final Dispersion subject, final int fromDistance, final int toDistance) {
+    private static List<Integer> toIntegerList(final BinomialDispersion subject, final int fromDistance, final int toDistance) {
         final List<Integer> result = new ArrayList<>((1 + toDistance) - fromDistance);
         for (int distance = fromDistance; distance <= toDistance; ++distance) {
             result.add(subject.getWeight(distance));
@@ -30,7 +30,7 @@ public class DispersionTest {
     public final void testGetWeight___0() {
         assertEquals(
                 Arrays.asList(0, 0, 1, 0, 0),
-                toIntegerList(Dispersion.forRadius(0), -2, 2)
+                toIntegerList(BinomialDispersion.forRadius(0), -2, 2)
         );
     }
 
@@ -38,7 +38,7 @@ public class DispersionTest {
     public final void testGetWeight___1() {
         assertEquals(
                 Arrays.asList(0, 1, 2, 1, 0),
-                toIntegerList(Dispersion.forRadius(1), -2, 2)
+                toIntegerList(BinomialDispersion.forRadius(1), -2, 2)
         );
     }
 
@@ -46,7 +46,7 @@ public class DispersionTest {
     public final void testGetWeight___2() {
         assertEquals(
                 Arrays.asList(1, 4, 6, 4, 1),
-                toIntegerList(Dispersion.forRadius(2))
+                toIntegerList(BinomialDispersion.forRadius(2))
         );
     }
 
@@ -54,7 +54,7 @@ public class DispersionTest {
     public final void testGetWeight___3() {
         assertEquals(
                 Arrays.asList(1, 6, 15, 20, 15, 6, 1),
-                toIntegerList(Dispersion.forRadius(3))
+                toIntegerList(BinomialDispersion.forRadius(3))
         );
     }
 
@@ -62,7 +62,7 @@ public class DispersionTest {
     public final void testGetWeight___4() {
         assertEquals(
                 Arrays.asList(1, 8, 28, 56, 70, 56, 28, 8, 1),
-                toIntegerList(Dispersion.forRadius(4))
+                toIntegerList(BinomialDispersion.forRadius(4))
         );
     }
 
@@ -74,13 +74,13 @@ public class DispersionTest {
                         12870,
                         11440, 8008, 4368, 1820, 560, 120, 16, 1, 0, 0, 0, 0, 0, 0
                 ),
-                toIntegerList(Dispersion.forRadius(8), 14)
+                toIntegerList(BinomialDispersion.forRadius(8), 14)
         );
     }
 
     @Test
     public final void testGetWeightAndEffectiveRadius__12() {
-        final Dispersion subject = Dispersion.forRadius(12);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(12);
         assertEquals(
                 Arrays.asList(
                         0, 0, 1, 24,
@@ -99,7 +99,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius__13() {
-        final Dispersion subject = Dispersion.forRadius(13);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(13);
         assertEquals(
                 Arrays.asList(
                         0, 1, 26, 325,
@@ -118,7 +118,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius__14() {
-        final Dispersion subject = Dispersion.forRadius(14);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(14);
         assertEquals(
                 Arrays.asList(
                         0, 7, 94, 819,
@@ -137,7 +137,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius__15() {
-        final Dispersion subject = Dispersion.forRadius(15);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(15);
         assertEquals(
                 Arrays.asList(
                         0, 1, 27, 253, 1712,
@@ -156,7 +156,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius__16() {
-        final Dispersion subject = Dispersion.forRadius(16);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(16);
         assertEquals(
                 Arrays.asList(
                         0, 7, 77, 561, 3146,
@@ -175,7 +175,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius__17() {
-        final Dispersion subject = Dispersion.forRadius(17);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(17);
         assertEquals(
                 Arrays.asList(
                         0, 2, 23, 181, 1086, 5253,
@@ -194,7 +194,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius__30() {
-        final Dispersion subject = Dispersion.forRadius(30);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(30);
         assertEquals(
                 Arrays.asList(
                         0, 1,
@@ -215,7 +215,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius__60() {
-        final Dispersion subject = Dispersion.forRadius(60);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(60);
         assertEquals(
                 Arrays.asList(
                         1, 4, 13, 36, 94, 232, 547, 1243, 2716, 5712,
@@ -236,7 +236,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius_300() {
-        final Dispersion subject = Dispersion.forRadius(300);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(300);
         assertEquals(
                 Arrays.asList(
                         0, 0, 0, 1, 2, 3, 6, 9, 14, 22,
@@ -265,7 +265,7 @@ public class DispersionTest {
 
     @Test
     public final void testGetWeightAndEffectiveRadius_999() {
-        final Dispersion subject = Dispersion.forRadius(999);
+        final BinomialDispersion subject = BinomialDispersion.forRadius(999);
         assertEquals(
                 Arrays.asList(
                         0, 0, 0, 0, 1, 1, 1, 2, 3, 4,
