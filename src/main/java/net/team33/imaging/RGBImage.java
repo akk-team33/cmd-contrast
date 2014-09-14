@@ -1,6 +1,6 @@
 package net.team33.imaging;
 
-import net.team33.imaging.math.BinomialDispersion;
+import net.team33.imaging.math.Dispersion;
 
 import javax.imageio.ImageIO;
 import java.awt.Point;
@@ -86,14 +86,14 @@ public class RGBImage {
 
     public final RGBImage blurred(final int radius) {
         try {
-            final BinomialDispersion dispersion = BinomialDispersion.forRadius(radius);
+            final Dispersion dispersion = Dispersion.forRadius(radius);
             return blurred(HORIZONTAL, dispersion).blurred(VERTICAL, dispersion);
         } finally {
             System.out.println(" blurred ");
         }
     }
 
-    private RGBImage blurred(final Direction direction, final BinomialDispersion dispersion) {
+    private RGBImage blurred(final Direction direction, final Dispersion dispersion) {
         return new RGBImage(width, height, type, new Blurring(this, direction, dispersion));
     }
 
@@ -143,9 +143,9 @@ public class RGBImage {
     private static class Blurring implements PixelSupplier {
         private final RGBImage origin;
         private final Direction direction;
-        private final BinomialDispersion dispersion;
+        private final Dispersion dispersion;
 
-        private Blurring(final RGBImage origin, final Direction direction, final BinomialDispersion dispersion) {
+        private Blurring(final RGBImage origin, final Direction direction, final Dispersion dispersion) {
             this.origin = origin;
             this.direction = direction;
             this.dispersion = dispersion;
