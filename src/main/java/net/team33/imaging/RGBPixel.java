@@ -28,22 +28,22 @@ public class RGBPixel {
         return new Builder();
     }
 
-    public static RGBPixel enhanced(final RGBPixel sharp, final RGBPixel blurred, final double intensity) {
+    public static RGBPixel enhanced(final RGBPixel sharp, final RGBPixel blurred) {
         //noinspection AccessingNonPublicFieldOfAnotherObject
         return new RGBPixel(
-                enhanced(sharp.red, blurred.red, intensity),
-                enhanced(sharp.green, blurred.green, intensity),
-                enhanced(sharp.blue, blurred.blue, intensity)
+                enhanced(sharp.red, blurred.red),
+                enhanced(sharp.green, blurred.green),
+                enhanced(sharp.blue, blurred.blue)
         );
     }
 
-    private static int enhanced(final int sharp, final int blurred, final double intensity) {
-        final Point center = new Point((sharp < blurred) ? 0 : VALUE_LIMIT, blurred);
-        final double radius = (sharp < blurred) ? blurred : (VALUE_LIMIT - blurred);
+    private static int enhanced(final int sharp, final int blurred) {
+        final Point center = new Point((sharp < blurred) ? -blurred : VALUE_LIMIT + blurred, blurred);
+        final double radius = ((sharp < blurred) ? blurred : (VALUE_LIMIT - blurred)) * 2.0;
         final Circle circle = new Circle(center, radius, sharp > blurred);
 
         //noinspection NumericCastThatLosesPrecision
-        return (int) ((circle.y(sharp) * intensity) + (sharp * (1.0 - intensity)));
+        return (int) circle.y(sharp);
     }
 
     public final int getRed() {
@@ -86,4 +86,4 @@ public class RGBPixel {
             );
         }
     }
-}
+    }

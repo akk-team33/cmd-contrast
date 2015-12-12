@@ -3,7 +3,7 @@ package net.team33.imaging;
 import net.team33.imaging.math.Dispersion;
 
 import javax.imageio.ImageIO;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -31,10 +31,10 @@ public class RGBImage {
         final ErrorHandler errorHandler = new ErrorHandler();
         final ExecutorService service = Executors.newWorkStealingPool();
         for (int y = 0; (y < height) && errorHandler.isClean(); ++y) {
-//            for (int x = 0; x < width; ++x) {
-//                setPixel(x, y, supplier.supply(x, y));
-//            }
-            service.execute(new LineWise(y, supplier, errorHandler));
+            for (int x = 0; x < width; ++x) {
+                setPixel(x, y, supplier.supply(x, y));
+            }
+//            service.execute(new LineWise(y, supplier, errorHandler));
             if (0 == (y % 64)) {
                 System.out.print('.');
             }
@@ -45,7 +45,7 @@ public class RGBImage {
             } else {
                 service.shutdown();
             }
-            if (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+            if (!service.awaitTermination(2, TimeUnit.MINUTES)) {
                 throw new InterruptedException("timeout occurred");
             }
         } catch (final InterruptedException e) {
@@ -70,8 +70,9 @@ public class RGBImage {
         );
     }
 
-    public final void write(final Format format, final Path path) throws IOException {
+    public final RGBImage write(final Format format, final Path path) throws IOException {
         ImageIO.write(build(), format.getRawName(), path.toFile());
+        return this;
     }
 
     public final BufferedImage build() {
@@ -121,9 +122,9 @@ public class RGBImage {
         return x + (y * width);
     }
 
-    public final RGBImage enhanced(final int radius, final double intensity) {
+    public final RGBImage enhanced(final RGBImage blurred) {
         try {
-            return new RGBImage(width, height, type, new Enhancing(this, blurred(radius), intensity));
+            return new RGBImage(width, height, type, new Enhancing(this, blurred));
         } finally {
             System.out.println(" enhanced ");
         }
@@ -168,7 +169,6 @@ public class RGBImage {
 
     private static class ErrorHandler implements Consumer<Throwable> {
         private volatile Throwable caught = null;
-
         @Override
         public final synchronized void accept(final Throwable throwable) {
             if (null == caught) {
@@ -213,17 +213,15 @@ public class RGBImage {
     private class Enhancing implements PixelSupplier {
         private final RGBImage sharp;
         private final RGBImage blurred;
-        private final double intensity;
 
-        private Enhancing(final RGBImage sharp, final RGBImage blurred, final double intensity) {
+        private Enhancing(final RGBImage sharp, final RGBImage blurred) {
             this.sharp = sharp;
             this.blurred = blurred;
-            this.intensity = intensity;
         }
 
         @Override
         public final RGBPixel supply(final int x, final int y) {
-            return RGBPixel.enhanced(sharp.getPixel(x, y), blurred.getPixel(x, y), intensity);
+            return RGBPixel.enhanced(sharp.getPixel(x, y), blurred.getPixel(x, y));
         }
     }
 }

@@ -4,6 +4,7 @@ import net.team33.imaging.Format;
 import net.team33.imaging.RGBImage;
 
 import java.io.IOException;
+import java.util.List;
 
 // 73948 (14:18)
 // 327272 (14:01)
@@ -25,8 +26,19 @@ public final class Main {
 
     private static void proceed(final Args args) throws IOException {
         System.out.println(args);
-        RGBImage.read(args.getSourcePath())
-                .enhanced(args.getRadius(), args.getFactor())
-                .write(Format.PNG, args.getDestinationPath());
+        proceed(RGBImage.read(args.getSourcePath()), args.getJobs());
+    }
+
+    private static void proceed(RGBImage origin, List<Args.Job> jobs) throws IOException {
+        RGBImage prev = origin;
+        for (final Args.Job job : jobs) {
+            final RGBImage blurred = prev
+                    .blurred(job.getRadius())
+                    .write(Format.PNG, job.getBlurredPath());
+            origin
+                    .enhanced(blurred)
+                    .write(Format.PNG, job.getEnhancedPath());
+            prev = blurred;
+        }
     }
 }

@@ -1,71 +1,92 @@
 package net.team33.imaging.contrast;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static java.lang.String.format;
 
 public class Args {
 
-    private static final double MAX_FACTOR = 100.0;
-    private static final int MAX_RADIUS = 1024;
-
     private final Path sourcePath;
-    private final int radius;
-    private final double factor;
-    private Path destinationPath;
+    private final List<Job> jobs;
 
-    private Args(final Path sourcePath, final int radius, final double factor)
-            throws NullPointerException, IllegalArgumentException {
-        if ((0 < radius) && (radius <= MAX_RADIUS) && (0 < factor) && (factor <= MAX_FACTOR)) {
-            this.sourcePath = sourcePath.toAbsolutePath().normalize();
-            this.radius = radius;
-            this.factor = factor;
-        } else {
-            throw new IllegalArgumentException(format(
-                    "Required: ((0 < radius(%d) <= %d) && (0 < factor(%s) <= %s))",
-                    radius, MAX_RADIUS, factor, MAX_FACTOR));
+    private Args(final Path sourcePath, final Set<Integer> radii) {
+        this.sourcePath = sourcePath.toAbsolutePath().normalize();
+        this.jobs = new ArrayList<>(radii.size());
+        int prev = 0;
+        for (final Integer radius : radii) {
+            jobs.add(new Job(radius, prev, this.sourcePath.toString()));
+            prev = radius;
         }
     }
 
     public static Args build(final String[] args) throws Problem {
         try {
-            return new Args(Paths.get(args[0]), Integer.parseInt(args[1]), Double.parseDouble(args[2]));
+            return build(Arrays.asList(args).iterator());
         } catch (RuntimeException caught) {
             throw new Problem(format("Problem while parsing arguments <%s>", Arrays.toString(args)), caught);
         }
     }
 
-    private static Path outputPath(final Path sourcePath, String name) throws IOException {
-        final String toString = sourcePath.toString();
-        final int dotPos = toString.lastIndexOf('.');
-        final Path dir = Paths.get(toString.substring(0, dotPos));
-        Files.createDirectories(dir);
-        return dir.resolve(name);
+    private static Args build(final Iterator<String> iterator) {
+        final String filename = iterator.next();
+        final Set<Integer> radien = new TreeSet<>();
+        while (iterator.hasNext()) {
+            radien.add(Integer.parseInt(iterator.next()));
+        }
+        return new Args(Paths.get(filename).toAbsolutePath().normalize(), radien);
     }
 
     public Path getSourcePath() {
         return sourcePath;
     }
 
-    public int getRadius() {
-        return radius;
-    }
-
-    public double getFactor() {
-        return factor;
+    public List<Job> getJobs() {
+        return Collections.unmodifiableList(jobs);
     }
 
     @Override
     public final String toString() {
-        return format("Args(sourcePath(%s), radius(%d), factor(%s)}", sourcePath, radius, factor);
+        return format("Args(sourcePath(%s), jobs(%s)}", sourcePath, jobs);
     }
 
-    public Path getDestinationPath() throws IOException {
-        return outputPath(sourcePath, "destination.png");
+    public static class Job {
+        private final int radius;
+        private final String blurredPath;
+        private final String enhancedPath;
+
+        private Job(final int radius, final int prevRadius, final String sourcePath) {
+            this.radius = radius - prevRadius;
+            final String format = String.format(
+                    "%s (%%s@%d).png",
+                    sourcePath.substring(0, sourcePath.lastIndexOf(".")), radius);
+            this.blurredPath = String.format(format, "blurred");
+            this.enhancedPath = String.format(format, "enhanced");
+        }
+
+        public int getRadius() {
+            return radius;
+        }
+
+        @Override
+        public final String toString() {
+            return format("Job(radius(%d), blurredPath(%s)}", radius, blurredPath);
+        }
+
+        public Path getBlurredPath() {
+            return Paths.get(blurredPath);
+        }
+
+        public Path getEnhancedPath() {
+            return Paths.get(enhancedPath);
+        }
     }
 
     public static class Problem extends Exception {

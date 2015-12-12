@@ -15,7 +15,7 @@ public class PixelInfo {
     private final Component blue;
 
     public PixelInfo(
-            final Args args, final BufferedImage image, final int x0, final int y0, final int width, final int height) {
+            final int radius, final BufferedImage image, final int x0, final int y0, final int width, final int height) {
 
         final int[] redHistogram = new int[VALUE_LIMIT];
         final int[] greenHistogram = new int[VALUE_LIMIT];
@@ -23,10 +23,10 @@ public class PixelInfo {
 
         final Random random = new Random();
 
-        for (int x = x0 - args.getRadius(), xMax = x0 + args.getRadius(); x <= xMax; ++x) {
-            for (int y = y0 - args.getRadius(), yMax = y0 + args.getRadius(); y <= yMax; ++y) {
+        for (int x = x0 - radius, xMax = x0 + radius; x <= xMax; ++x) {
+            for (int y = y0 - radius, yMax = y0 + radius; y <= yMax; ++y) {
                 if ((0 <= x) && (x < width) && (0 <= y) && (y < height)) {
-                    if ((square(x - x0) + square(y - y0)) <= square(random.nextInt(args.getRadius()))) {
+                    if ((square(x - x0) + square(y - y0)) <= square(random.nextInt(radius))) {
                         final int rgb = image.getRGB(x, y);
                         redHistogram[Rgb.red(rgb)] += 1;
                         greenHistogram[Rgb.green(rgb)] += 1;
@@ -43,9 +43,9 @@ public class PixelInfo {
     }
 
     public static PixelInfo valueOf(
-            final Args args, final BufferedImage image, final int x, final int y, final int width, final int height) {
+            final int radius, final BufferedImage image, final int x, final int y, final int width, final int height) {
 
-        return new PixelInfo(args, image, x, y, width, height);
+        return new PixelInfo(radius, image, x, y, width, height);
     }
 
     private long square(final long base) {
