@@ -3,6 +3,8 @@ package net.team33.imaging;
 import net.team33.imaging.doubles.Circle;
 import net.team33.imaging.doubles.Point;
 
+import java.util.function.BiFunction;
+
 public class RGBPixel {
 
     private static final int RED_BITS = 0x00ff0000;
@@ -29,21 +31,55 @@ public class RGBPixel {
     }
 
     public static RGBPixel enhanced(final RGBPixel sharp, final RGBPixel blurred) {
-        //noinspection AccessingNonPublicFieldOfAnotherObject
         return new RGBPixel(
-                enhanced(sharp.red, blurred.red),
-                enhanced(sharp.green, blurred.green),
-                enhanced(sharp.blue, blurred.blue)
+                enhanced(sharp.red, blurred.red, RGBPixel::enhancedCenter, RGBPixel::enhancedUpper),
+                enhanced(sharp.green, blurred.green, RGBPixel::enhancedCenter, RGBPixel::enhancedUpper),
+                enhanced(sharp.blue, blurred.blue, RGBPixel::enhancedCenter, RGBPixel::enhancedUpper)
         );
     }
 
-    private static int enhanced(final int sharp, final int blurred) {
-        final Point center = new Point((sharp < blurred) ? 0 : VALUE_LIMIT, blurred);
+    public static RGBPixel smoothed(final RGBPixel sharp, final RGBPixel blurred) {
+        return new RGBPixel(
+                enhanced(sharp.red, blurred.red, RGBPixel::smoothedCenter, RGBPixel::smoothedUpper),
+                enhanced(sharp.green, blurred.green, RGBPixel::smoothedCenter, RGBPixel::smoothedUpper),
+                enhanced(sharp.blue, blurred.blue, RGBPixel::smoothedCenter, RGBPixel::smoothedUpper)
+        );
+    }
+
+    private static boolean enhancedUpper(final int sharp, final int blurred) {
+        return sharp > blurred;
+    }
+
+    private static boolean smoothedUpper(final int sharp, final int blurred) {
+        return sharp < blurred;
+    }
+
+    private static Point enhancedCenter(final int sharp, final int blurred) {
+        return new Point((sharp < blurred) ? 0 : VALUE_LIMIT, blurred);
+    }
+
+    private static Point smoothedCenter(final int sharp, final int blurred) {
+        return new Point(blurred, (sharp < blurred) ? 0 : VALUE_LIMIT);
+    }
+
+    private static int enhanced(final int sharp, final int blurred,
+                                final BiFunction<Integer, Integer, Point> center,
+                                final BiFunction<Integer, Integer, Boolean> upper) {
         final double radius = ((sharp < blurred) ? blurred : (VALUE_LIMIT - blurred));
-        final Circle circle = new Circle(center, radius, sharp > blurred);
+        final Circle circle = new Circle(center.apply(sharp, blurred), radius, upper.apply(sharp, blurred));
 
         //noinspection NumericCastThatLosesPrecision
-        return (int) ((circle.y(sharp) + sharp + sharp) / 3.0);
+        return (int) ((circle.y(sharp) + sharp) / 2.0);
+    }
+
+    public static int normal(final int value, final int min, final int max) {
+        return (int) normalLong(value, min, max + 1L);
+    }
+
+    private static long normalLong(final long value, final long min, final long limit) {
+        // (value - min) / (limit - min) = result / VALUE_LIMIT
+        // ((value - min) * VALUE_LIMIT) / (limit - min) = result
+        return ((value - min) * VALUE_LIMIT) / (limit - min);
     }
 
     public final int getRed() {

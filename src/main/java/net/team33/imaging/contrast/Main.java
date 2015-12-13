@@ -6,9 +6,6 @@ import net.team33.imaging.RGBImage;
 import java.io.IOException;
 import java.util.List;
 
-// 73948 (14:18)
-// 327272 (14:01)
-
 public final class Main {
 
     private Main() {
@@ -26,18 +23,37 @@ public final class Main {
 
     private static void proceed(final Args args) throws IOException {
         System.out.println(args);
-        proceed(RGBImage.read(args.getSourcePath()), args.getJobs());
+        final long time0 = System.currentTimeMillis();
+        proceed(
+                RGBImage.read(args.getSourcePath())
+                        .normalized()
+                        .write(Format.PNG, args.getPath("normalized")),
+                args);
+        final long timeX = System.currentTimeMillis();
+        System.out.println(String.format("time elapsed: %f sec.", (timeX - time0) / 1000.0));
     }
 
-    private static void proceed(RGBImage origin, List<Args.Job> jobs) throws IOException {
+    private static void proceed(final RGBImage origin, final Args args) throws IOException {
+        proceed(
+                origin.smoothed(origin.blurred(16)).write(Format.PNG, args.getPath("smoothed")),
+                args.getJobs());
+    }
+
+    private static void proceed(final RGBImage origin, final List<Args.Job> jobs) throws IOException {
         RGBImage prev = origin;
         for (final Args.Job job : jobs) {
             final RGBImage blurred = prev
                     .blurred(job.getRadius())
-                    .write(Format.PNG, job.getBlurredPath());
+                    .write(Format.PNG, job.getPath("blurred"));
+            final RGBImage normal = blurred
+                    .normalized()
+                    .write(Format.PNG, job.getPath("normalized"));
             origin
-                    .enhanced(blurred)
-                    .write(Format.PNG, job.getEnhancedPath());
+                    .enhanced(normal)
+                    .write(Format.PNG, job.getPath("enhanced"));
+            origin
+                    .smoothed(normal)
+                    .write(Format.PNG, job.getPath("smoothed"));
             prev = blurred;
         }
     }

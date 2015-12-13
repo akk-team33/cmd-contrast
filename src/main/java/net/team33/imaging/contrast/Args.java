@@ -14,15 +14,19 @@ import static java.lang.String.format;
 
 public class Args {
 
-    private final Path sourcePath;
+    private final String sourcePath;
     private final List<Job> jobs;
+    private final String outPath;
 
     private Args(final Path sourcePath, final Set<Integer> radii) {
-        this.sourcePath = sourcePath.toAbsolutePath().normalize();
+        this.sourcePath = sourcePath.toAbsolutePath().normalize().toString();
+        this.outPath = String.format(
+                "%s (%%s).png",
+                this.sourcePath.substring(0, this.sourcePath.lastIndexOf(".")));
         this.jobs = new ArrayList<>(radii.size());
         int prev = 0;
         for (final Integer radius : radii) {
-            jobs.add(new Job(radius, prev, this.sourcePath.toString()));
+            jobs.add(new Job(radius, prev, this.outPath));
             prev = radius;
         }
     }
@@ -45,7 +49,11 @@ public class Args {
     }
 
     public Path getSourcePath() {
-        return sourcePath;
+        return Paths.get(sourcePath);
+    }
+
+    public Path getPath(final String job) {
+        return Paths.get(String.format(outPath, job));
     }
 
     public List<Job> getJobs() {
@@ -59,16 +67,13 @@ public class Args {
 
     public static class Job {
         private final int radius;
-        private final String blurredPath;
-        private final String enhancedPath;
+        private final String outPath;
 
-        private Job(final int radius, final int prevRadius, final String sourcePath) {
+        private Job(final int radius, final int prevRadius, final String outPath) {
             this.radius = radius - prevRadius;
-            final String format = String.format(
-                    "%s (%%s@%d).png",
-                    sourcePath.substring(0, sourcePath.lastIndexOf(".")), radius);
-            this.blurredPath = String.format(format, "blurred");
-            this.enhancedPath = String.format(format, "enhanced");
+            this.outPath = String.format(
+                    outPath,
+                    String.format("%%s@%d", radius));
         }
 
         public int getRadius() {
@@ -77,15 +82,11 @@ public class Args {
 
         @Override
         public final String toString() {
-            return format("Job(radius(%d), blurredPath(%s)}", radius, blurredPath);
+            return format("Job(radius(%d), outPath(%s)}", radius, outPath);
         }
 
-        public Path getBlurredPath() {
-            return Paths.get(blurredPath);
-        }
-
-        public Path getEnhancedPath() {
-            return Paths.get(enhancedPath);
+        public Path getPath(final String job) {
+            return Paths.get(String.format(outPath, job));
         }
     }
 
