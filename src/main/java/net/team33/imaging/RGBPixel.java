@@ -38,12 +38,12 @@ public class RGBPixel {
     }
 
     private static int enhanced(final int sharp, final int blurred) {
-        final Point center = new Point((sharp < blurred) ? -blurred : VALUE_LIMIT + blurred, blurred);
-        final double radius = ((sharp < blurred) ? blurred : (VALUE_LIMIT - blurred)) * 2.0;
+        final Point center = new Point((sharp < blurred) ? 0 : VALUE_LIMIT, blurred);
+        final double radius = ((sharp < blurred) ? blurred : (VALUE_LIMIT - blurred));
         final Circle circle = new Circle(center, radius, sharp > blurred);
 
         //noinspection NumericCastThatLosesPrecision
-        return (int) circle.y(sharp);
+        return (int) ((circle.y(sharp) + sharp + sharp) / 3.0);
     }
 
     public final int getRed() {

@@ -1,5 +1,6 @@
 package net.team33.imaging;
 
+import net.team33.imaging.math.BinomialDispersion;
 import net.team33.imaging.math.Dispersion;
 
 import javax.imageio.ImageIO;
@@ -87,7 +88,7 @@ public class RGBImage {
 
     public final RGBImage blurred(final int radius) {
         try {
-            final Dispersion dispersion = Dispersion.forRadius(radius);
+            final Dispersion dispersion = BinomialDispersion.forRadius(radius);
             return blurred(HORIZONTAL, dispersion).blurred(VERTICAL, dispersion);
         } finally {
             System.out.println(" blurred ");

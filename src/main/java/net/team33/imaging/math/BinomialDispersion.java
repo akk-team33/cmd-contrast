@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BinomialDispersion {
+public class BinomialDispersion implements Dispersion {
 
     private static final BigInteger MAX_WEIGHT = BigInteger.valueOf(0x00ffffff);
     private static final Map<BigInteger, BigInteger> CACHE = new HashMap<>(5000);
@@ -76,14 +76,17 @@ public class BinomialDispersion {
         return new BinomialDispersion(radius);
     }
 
+    @Override
     public final int getNominalRadius() {
         return nominalRadius;
     }
 
+    @Override
     public final int getEffectiveRadius() {
         return effectiveRadius;
     }
 
+    @Override
     public final int getWeight(final int distance) {
         if (0 > distance) {
             //noinspection TailRecursion
@@ -97,6 +100,7 @@ public class BinomialDispersion {
         }
     }
 
+    @Override
     public final int getMinDistance() {
         return -effectiveRadius;
     }
